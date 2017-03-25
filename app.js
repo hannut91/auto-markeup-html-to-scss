@@ -1,11 +1,13 @@
 var fs = require('fs');
 var cheerio = require('cheerio');
 var _ = require('lodash');
-var re = /([a-zA-Z0-9:.>&,\(\)#-]+\s*)+[a-zA-Z0-9:.>&,\(\)#-]+|[a-zA-Z0-9:.>&,\(\)#-]+/;
-var contentRegex = /([a-zA-Z0-9:.>&,\(\)-;\$]+\s*)+[a-zA-Z0-9:.>&,\(\)-;\$]+/g;
-
+var re = /([a-zA-Z0-9:.>&,\(\)#-\/]+\s*)+[a-zA-Z0-9:.>&,\(\)#-\/]+|[a-zA-Z0-9:.>&,\(\)#-\/]+/;
+var contentRegex = /([a-zA-Z0-9:.>&,\(\)-;\$'"\/_%#!+~]+\s*)+[a-zA-Z0-9:.>&,\(\)-;\$'"\/+_%#!+~]+/g;
+// var htmlFile = '/Users/yoon/applicat/Appzet/appzetmobile/src/app/components/app-footer/app-footer.component.html';
+// var scssFile = '/Users/yoon/applicat/Appzet/appzetmobile/src/app/components/app-footer/app-footer.component.scss';
+var htmlFile = process.argv[2];
+var scssFile = process.argv[3];
 var htmlObjs = '';
-
 function copyScss(htmlData) {
   var $ = cheerio.load(htmlData, {
     decodeEntities: false,
@@ -21,8 +23,9 @@ function copyScss(htmlData) {
   }
 
   function removeNone(child) {
-    console.log("child.attribs ::: ", child.attribs);
-    if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
+    if ((typeof child.attribs == 'object') && (typeof child.attribs.id == 'string')) {
+      validTags.push(child);
+    } else  if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
       validTags.push(child);
     } else {
       if (child.children && child.children.length > 0) {
@@ -76,7 +79,22 @@ function copyScss(htmlData) {
         }
       }
 
-      if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
+      if ((typeof child.attribs == 'object') && (typeof child.attribs.id == 'string')) {
+        if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
+          return {
+            class: "#" + child.attribs.id,
+            child: [{
+              class: child.attribs.class,
+              child: nestedList
+            }]
+          }
+        } else {
+          return {
+            class: "#" + child.attribs.id,
+            child: nestedList
+          }
+        }
+      } else if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
         return {
           class: child.attribs.class,
           child: nestedList
@@ -88,7 +106,22 @@ function copyScss(htmlData) {
         }
       }
     } else {
-      if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
+      if ((typeof child.attribs == 'object') && (typeof child.attribs.id == 'string')) {
+        if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
+          return {
+            class: child.attribs.id,
+            child: [{
+              class: child.attribs.class,
+              child: []
+            }]
+          }
+        } else {
+          return {
+            class: "#" + child.attribs.id,
+            child: []
+          };
+        }
+      } else if ((typeof child.attribs == 'object') && (typeof child.attribs.class == 'string')) {
         return {
           class: child.attribs.class,
           child: []
@@ -151,7 +184,9 @@ function copyScss(htmlData) {
   htmlObjs = scssList;
 
   function printResult(obj) {
-    obj.class = '.' + obj.class.split(" ").join(' .');
+    if(obj.class && obj.class[0] != "#"){
+      obj.class = '.' + obj.class.split(" ").join(' .');
+    }
     obj.content = [];
     if(obj.child.length > 0){
       for(var i = 0;i < obj.child.length; i++ ){
@@ -161,8 +196,9 @@ function copyScss(htmlData) {
   }
 }
 
-var htmlData = fs.readFileSync('test.html').toString();
-var data = fs.readFileSync('test.scss').toString();
+
+var htmlData = fs.readFileSync(htmlFile).toString();
+var data = fs.readFileSync(scssFile).toString();
 var index = 0;
 var etc = [];
 var objs = [];
@@ -262,42 +298,105 @@ function find(target, resource){
   }
 }
 
-// var resultScss = '';
-// var index;
-// for(var i =0; i < etc.length; i++){
-//   resultScss += etc[i];
-//   resultScss += '\n';
+// for(var i = 0; i < objs.length; i++){
+//   findNestedStart(objs[i]);
 // }
-// for(var i = 0;i < objs.length; i++){
-//   index = 0;
-//   toScss(objs[i]);
-//   resultScss += '\n';
-// }
-// function toScss(obj){
-//   // resultScss += '\n';
-//   for(var k = 0; k < index; k++){
-//     resultScss += '  ';
-//   }
-//   resultScss += obj.class + ' {\n';
 //
-//   for(var m = 0;m < obj.content.length; m++){
-//     for(var k = 0; k < index +1 ; k++){
-//       resultScss += '  ';
-//     }
-//     resultScss += obj.content[m];
-//     resultScss += '\n';
-//   }
+// function findNestedStart(obj){
+//   if(obj.child.length < 0) return;
+//
 //   for(var j = 0;j < obj.child.length; j++){
-//     index ++;
-//     resultScss += '\n';
-//     toScss(obj.child[j]);
+//     for(var k = j+1; k < obj.child.length; k++){
+//       if(findNested(obj.child[j], obj.child[k])){
+//         obj.child[j] = {
+//           class: '',
+//           content:'',
+//           child:[]
+//         }
+//       }
+//     }
 //   }
-//   for(var k = 0; k < index; k++){
-//     resultScss += '  ';
-//   }
-//   resultScss += '}\n';
-//   index--;
 // }
 //
-// fs.writeFileSync('test.scss', resultScss);
-// console.log(resultScss);
+// function findNested(target, resource) {
+//   if(target.class == resource.class){
+//     if (target.child.length == 0 && resource.child.length == 0) {
+//       return true;
+//     } else if (target.child.length == 0 && resource.child.length > 0) {
+//       return true;
+//     } else if (target.child.length > 0 && resource.child.length == 0) {
+//       resource.child = target.child;
+//       return true;
+//     } else if (target.child.length > 0 && resource.child.length > 0) {
+//       var isConcatList = [];
+//       var concatList = [];
+//       for (var i = 0; i < target.child.length; i++) {
+//         for (var j = 0; j < resource.child.length; j++) {
+//           isConcatList.push(find(target.child[i], resource.child[j]));
+//         }
+//         if(isConcatList.indexOf(true) == -1){
+//           concatList.push(target.child[i]);
+//         }
+//         isConcatList = [];
+//       }
+//       resource.child = resource.child.concat(concatList);
+//       return true;
+//     }
+//   } else {
+//     if(resource.child.length > 0){
+//       for(var m = 0; m < resource.child.length; m++){
+//         if(findNested(target, resource.child[m])){
+//           target = {
+//             class: '',
+//             content: '',
+//             child: []
+//           }
+//           return true;
+//         }
+//       }
+//     } else {
+//       return false;
+//     }
+//   }
+// }
+
+
+var resultScss = '';
+var index;
+for(var i =0; i < etc.length; i++){
+  resultScss += etc[i];
+  resultScss += '\n';
+}
+for(var i = 0;i < objs.length; i++){
+  index = 0;
+  toScss(objs[i]);
+  resultScss += '\n';
+}
+function toScss(obj){
+  if(!obj.class) return;
+  for(var k = 0; k < index; k++){
+    resultScss += '  ';
+  }
+  resultScss += obj.class + ' {\n';
+
+  for(var m = 0;m < obj.content.length; m++){
+    for(var k = 0; k < index +1 ; k++){
+      resultScss += '  ';
+    }
+    resultScss += obj.content[m];
+    resultScss += '\n';
+  }
+  for(var j = 0;j < obj.child.length; j++){
+    index ++;
+    resultScss += '\n';
+    toScss(obj.child[j]);
+  }
+  for(var k = 0; k < index; k++){
+    resultScss += '  ';
+  }
+  resultScss += '}\n';
+  index--;
+
+}
+
+fs.writeFileSync(scssFile, resultScss);
