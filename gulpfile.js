@@ -1,8 +1,8 @@
 var gulp = require('gulp');
 var exec = require('child_process').exec;
 
-var htmlFile = '/Users/yoon/applicat/Appzet/appzetmobile/src/app/components/login/account-setting/account-setting.component.html';
-var scssFile = '/Users/yoon/applicat/Appzet/appzetmobile/src/app/components/login/account-setting/account-setting.component.scss';
+var htmlFile = '/Users/yunseok/Desktop/tests/test.html';
+var scssFile = '/Users/yunseok/Desktop/tests/test.scss';
 
 gulp.task('default', function() {
   // place code for your default task heren

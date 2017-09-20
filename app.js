@@ -1,10 +1,11 @@
 var fs = require('fs');
 var cheerio = require('cheerio');
 var _ = require('lodash');
-var re = /([a-zA-Z0-9:.>&,\(\)#-\/]+\s*)+[a-zA-Z0-9:.>&,\(\)#-\/]+|[a-zA-Z0-9:.>&,\(\)#-\/]+/;
-var contentRegex = /([a-zA-Z0-9:.>&,\(\)-;\$'"\/_%#!+~]+\s*)+[a-zA-Z0-9:.>&,\(\)-;\$'"\/+_%#!+~]+/g;
-// var htmlFile = '/Users/yoon/applicat/Appzet/appzetmobile/src/app/components/app-footer/app-footer.component.html';
-// var scssFile = '/Users/yoon/applicat/Appzet/appzetmobile/src/app/components/app-footer/app-footer.component.scss';
+var re = /([a-zA-Z0-9:.>&,\(\)#-\/~]+\s*)+[a-zA-Z0-9:.>&,\(\)#-\/]+|[a-zA-Z0-9:.>&,\(\)#-\/~]+/;
+var contentRegex = /([a-zA-Z0-9~:.>&,\(\)\-;\$'"\/_%#!+]+\s*)+[a-zA-Z0-9\~:.>&,\(\)\-;\$'"\/+_%#!+]+/g;
+// var contentRegex = /([a-zA-Z0-9~:.>&,\(\)-;\$'"\/_%#!+]+\s*)+[a-zA-Z0-9~:.>&,\(\)-;\$'"\/+_%#!+]+/g;
+// var htmlFile = '/Users/yunseok/Development/StartSmallAdmin/src/components/start-small/start-smalls.component.html';
+// var scssFile = '/Users/yunseok/Development/StartSmallAdmin/src/components/start-small/start-smalls.component.scss';
 var htmlFile = process.argv[2];
 var scssFile = process.argv[3];
 var htmlObjs = '';
